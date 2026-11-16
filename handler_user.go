@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"time"
 
@@ -16,20 +15,14 @@ func handlerLogin(s *state, cmd command) error {
 	}
 	username := cmd.arguments[0]
 
-	user, err := s.db.GetUser(
-		context.Background(),
-		sql.NullString{
-			String: username,
-			Valid:  true,
-		},
-	)
+	user, err := s.db.GetUser(context.Background(), username)
 	if err != nil {
 		return err
 	}
-	if err := s.cfg.SetUser(user.Name.String); err != nil {
+	if err := s.cfg.SetUser(user.Name); err != nil {
 		return fmt.Errorf("%s: %v", cmd.name, err)
 	}
-	fmt.Printf("successfully set %s as the current user\n", user.Name.String)
+	fmt.Printf("successfully set %s as the current user\n", user.Name)
 	return nil
 }
 
@@ -43,17 +36,39 @@ func handlerRegister(s *state, cmd command) error {
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-		Name: sql.NullString{
-			String: username,
-			Valid:  true,
-		},
+		Name:      username,
 	}
 
 	user, err := s.db.CreateUser(context.Background(), userParams)
 	if err != nil {
 		return err
 	}
-	s.cfg.SetUser(user.Name.String)
-	fmt.Printf("successfully register user %s\n", user.Name.String)
+	s.cfg.SetUser(user.Name)
+	fmt.Printf("successfully register user %s\n", user.Name)
+	return nil
+}
+
+func handlerReset(s *state, cmd command) error {
+	if err := s.db.ResetUsers(context.Background()); err != nil {
+		return err
+	}
+	fmt.Println("successfully reset users")
+	return nil
+}
+
+func handlerUsers(s *state, cmd command) error {
+	users, err := s.db.GetUsers(context.Background())
+	if err != nil {
+		return err
+	}
+
+	for _, user := range users {
+		username := user.Name
+		if s.cfg.CurrentUserName == username {
+			fmt.Printf("* %s (current)\n", username)
+			continue
+		}
+		fmt.Printf("* %s\n", username)
+	}
 	return nil
 }
