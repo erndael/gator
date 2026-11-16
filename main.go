@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"os"
 
 	"github.com/erndael/gator/internal/config"
 )
@@ -12,19 +12,30 @@ type state struct {
 }
 
 func main() {
+	args := os.Args
+	if len(args) < 2 {
+		log.Fatalf("usage: gator <command>")
+	}
+
 	cfg, err := config.Read()
 	if err != nil {
 		log.Fatalf("error reading config: %v", err)
 	}
 
-	if err := cfg.SetUser("erndael"); err != nil {
-		log.Fatalf("couldn't set current user: %v", err)
+	cmd := command{
+		name:      args[1],
+		arguments: args[2:],
 	}
 
-	cfg, err = config.Read()
-	if err != nil {
-		log.Fatalf("error reading config: %v", err)
+	s := &state{
+		cfg: &cfg,
 	}
 
-	fmt.Println(cfg)
+	registry := commands{
+		commands: map[string]func(*state, command) error{},
+	}
+	registry.register("login", handlerLogin)
+	if err := registry.run(s, cmd); err != nil {
+		log.Fatal(err)
+	}
 }
