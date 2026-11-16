@@ -52,6 +52,7 @@ func main() {
 	registry.register("register", handlerRegister)
 	registry.register("reset", handlerReset)
 	registry.register("users", handlerUsers)
+	registry.register("agg", handlerAgg)
 
 	if err := registry.run(s, cmd); err != nil {
 		log.Fatal(err)
