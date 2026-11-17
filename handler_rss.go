@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"html"
 )
 
 func handlerAgg(s *state, cmd command) error {
@@ -11,6 +10,6 @@ func handlerAgg(s *state, cmd command) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(html.UnescapeString(feed.Channel.Title))
+	fmt.Println(feed)
 	return nil
 }
