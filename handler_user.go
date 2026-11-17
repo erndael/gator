@@ -44,7 +44,7 @@ func handlerRegister(s *state, cmd command) error {
 		return err
 	}
 	s.cfg.SetUser(user.Name)
-	fmt.Printf("successfully register user %s\n", user.Name)
+	fmt.Printf("successfully registered user %s\n", user.Name)
 	return nil
 }
 
